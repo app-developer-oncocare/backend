@@ -11,5 +11,14 @@
   "extensionBundle": {
     "id": "Microsoft.Azure.Functions.ExtensionBundle",
     "version": "[4.*, 5.0.0)"
+  },
+  "cors": {
+    "allowedOrigins": [
+      "https://oncocare-doctor-frontend.vercel.app",
+      "https://oncocare-patient-frontend.vercel.app",
+      "http://localhost:8081",
+      "http://localhost:8082"
+    ],
+    "supportCredentials": true
   }
 }
