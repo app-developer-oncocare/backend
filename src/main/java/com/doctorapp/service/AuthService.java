@@ -37,8 +37,7 @@ public class AuthService {
             String countryCode = user.getCountryCode() != null ? user.getCountryCode().trim() : "";
             Document existing = collection.find(Filters.and(
                     Filters.eq("countryCode", countryCode),
-                    Filters.eq("mobileNo", user.getMobileNo().trim())
-            )).first();
+                    Filters.eq("mobileNo", user.getMobileNo().trim()))).first();
             if (existing != null) {
                 throw new IllegalArgumentException("User with this mobile number and country code already exists.");
             }
@@ -60,7 +59,7 @@ public class AuthService {
         if (user.getMobileNo() != null && !user.getMobileNo().trim().isEmpty()) {
             String countryCode = user.getCountryCode() != null ? user.getCountryCode().trim() : "";
             userDoc.append("mobileNo", user.getMobileNo().trim())
-                   .append("countryCode", countryCode);
+                    .append("countryCode", countryCode);
         }
 
         if (user.getProfile() != null) {
@@ -71,12 +70,17 @@ public class AuthService {
             if (user.getProfile().getConsultationFee() != null) {
                 profileDoc.append("consultationFee", user.getProfile().getConsultationFee());
             }
-            profileDoc.append("remainingCalls", user.getProfile().getRemainingCalls() != null ? user.getProfile().getRemainingCalls() : 0);
-            profileDoc.append("totalCalls", user.getProfile().getTotalCalls() != null ? user.getProfile().getTotalCalls() : 0);
-            profileDoc.append("remainingMeetings", user.getProfile().getRemainingMeetings() != null ? user.getProfile().getRemainingMeetings() : 0);
-            profileDoc.append("totalMeetings", user.getProfile().getTotalMeetings() != null ? user.getProfile().getTotalMeetings() : 0);
-            profileDoc.append("paymentsReceived", user.getProfile().getPaymentsReceived() != null ? user.getProfile().getPaymentsReceived() : 0.0);
-            
+            profileDoc.append("remainingCalls",
+                    user.getProfile().getRemainingCalls() != null ? user.getProfile().getRemainingCalls() : 0);
+            profileDoc.append("totalCalls",
+                    user.getProfile().getTotalCalls() != null ? user.getProfile().getTotalCalls() : 0);
+            profileDoc.append("remainingMeetings",
+                    user.getProfile().getRemainingMeetings() != null ? user.getProfile().getRemainingMeetings() : 0);
+            profileDoc.append("totalMeetings",
+                    user.getProfile().getTotalMeetings() != null ? user.getProfile().getTotalMeetings() : 0);
+            profileDoc.append("paymentsReceived",
+                    user.getProfile().getPaymentsReceived() != null ? user.getProfile().getPaymentsReceived() : 0.0);
+
             // Map new profile builder fields
             if (user.getProfile().getEducation() != null) {
                 profileDoc.append("education", user.getProfile().getEducation());
@@ -122,17 +126,17 @@ public class AuthService {
             if (user.getProfile().getSchedule() != null) {
                 profileDoc.append("schedule", new Document(user.getProfile().getSchedule()));
             }
-            
+
             userDoc.append("profile", profileDoc);
         }
 
         // 3. Insert into database
         collection.insertOne(userDoc);
-        
+
         // 4. Populate ID
         ObjectId generatedId = userDoc.getObjectId("_id");
         user.setId(generatedId.toHexString());
-        
+
         return user;
     }
 
@@ -151,8 +155,7 @@ public class AuthService {
             String cc = countryCode != null ? countryCode.trim() : "";
             doc = collection.find(Filters.and(
                     Filters.eq("countryCode", cc),
-                    Filters.eq("mobileNo", mobileNo.trim())
-            )).first();
+                    Filters.eq("mobileNo", mobileNo.trim()))).first();
             if (doc == null) {
                 throw new IllegalArgumentException("User with this mobile number and country code not found.");
             }
@@ -167,7 +170,8 @@ public class AuthService {
     // Helper: Map MongoDB document to User object
     @SuppressWarnings("unchecked")
     public static User mapDocToUser(Document doc) {
-        if (doc == null) return null;
+        if (doc == null)
+            return null;
 
         User user = new User();
         user.setId(doc.getObjectId("_id").toHexString());
@@ -175,12 +179,12 @@ public class AuthService {
         user.setMobileNo(doc.getString("mobileNo"));
         user.setCountryCode(doc.getString("countryCode"));
         user.setEmail(doc.getString("email"));
-        
+
         String roleStr = doc.getString("role");
         if (roleStr != null) {
             user.setRole(User.Role.valueOf(roleStr));
         }
-        
+
         user.setCreatedAt(doc.getDate("createdAt"));
 
         Document profileDoc = (Document) doc.get("profile");
