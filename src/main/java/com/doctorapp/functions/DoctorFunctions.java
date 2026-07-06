@@ -15,11 +15,56 @@ import com.microsoft.azure.functions.annotation.HttpTrigger;
 import io.jsonwebtoken.Claims;
 
 import java.util.Optional;
+import java.util.List;
 import java.util.logging.Level;
 
 public class DoctorFunctions {
     private static final ObjectMapper MAPPER = new ObjectMapper();
     private final DoctorService doctorService = new DoctorService();
+
+    @FunctionName("getDoctors")
+    public HttpResponseMessage getDoctors(
+            @HttpTrigger(
+                name = "req",
+                methods = {HttpMethod.GET},
+                authLevel = AuthorizationLevel.ANONYMOUS,
+                route = "doctors")
+            HttpRequestMessage<Optional<String>> request,
+            final ExecutionContext context) {
+        
+        context.getLogger().info("Processing get doctors request.");
+
+        // 1. Authenticate Request via JWT Bearer Token
+        String authHeader = request.getHeaders().get("authorization");
+        if (authHeader == null || !authHeader.startsWith("Bearer ")) {
+            return request.createResponseBuilder(HttpStatus.UNAUTHORIZED)
+                    .body("{\"error\": \"Missing or invalid Authorization header.\"}")
+                    .header("Content-Type", "application/json")
+                    .build();
+        }
+
+        String token = authHeader.substring(7);
+        if (!JwtUtil.validateToken(token)) {
+            return request.createResponseBuilder(HttpStatus.UNAUTHORIZED)
+                    .body("{\"error\": \"Token is expired or invalid.\"}")
+                    .header("Content-Type", "application/json")
+                    .build();
+        }
+
+        try {
+            List<User> list = doctorService.getAllDoctors();
+            return request.createResponseBuilder(HttpStatus.OK)
+                    .body(MAPPER.writeValueAsString(list))
+                    .header("Content-Type", "application/json")
+                    .build();
+        } catch (Exception e) {
+            context.getLogger().log(Level.SEVERE, "Failed to fetch doctors list", e);
+            return request.createResponseBuilder(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("{\"error\": \"Failed to retrieve doctors list: " + e.getMessage() + "\"}")
+                    .header("Content-Type", "application/json")
+                    .build();
+        }
+    }
 
     @FunctionName("updateProfile")
     public HttpResponseMessage updateProfile(

@@ -80,16 +80,9 @@ public class AppointmentService {
     /**
      * Updates the status of an appointment (CONFIRMED or CANCELLED).
      */
-    public Appointment updateAppointmentStatus(String appointmentId, String status) {
+    public Appointment updateAppointment(String appointmentId, String status, String timeSlot) {
         if (!ObjectId.isValid(appointmentId)) {
             throw new IllegalArgumentException("Invalid appointment ID format.");
-        }
-
-        Appointment.Status newStatus;
-        try {
-            newStatus = Appointment.Status.valueOf(status.toUpperCase());
-        } catch (IllegalArgumentException e) {
-            throw new IllegalArgumentException("Invalid status. Must be PENDING, CONFIRMED, or CANCELLED.");
         }
 
         MongoCollection<Document> collection = getAppointmentsCollection();
@@ -98,10 +91,26 @@ public class AppointmentService {
             throw new IllegalArgumentException("Appointment not found with ID: " + appointmentId);
         }
 
-        collection.updateOne(
-            Filters.eq("_id", new ObjectId(appointmentId)),
-            Updates.set("status", newStatus.toString())
-        );
+        List<org.bson.conversions.Bson> updates = new ArrayList<>();
+        if (status != null && !status.isEmpty()) {
+            Appointment.Status newStatus;
+            try {
+                newStatus = Appointment.Status.valueOf(status.toUpperCase());
+                updates.add(Updates.set("status", newStatus.toString()));
+            } catch (IllegalArgumentException e) {
+                throw new IllegalArgumentException("Invalid status. Must be PENDING, CONFIRMED, or CANCELLED.");
+            }
+        }
+        if (timeSlot != null && !timeSlot.isEmpty()) {
+            updates.add(Updates.set("timeSlot", timeSlot));
+        }
+
+        if (!updates.isEmpty()) {
+            collection.updateOne(
+                Filters.eq("_id", new ObjectId(appointmentId)),
+                Updates.combine(updates)
+            );
+        }
 
         Document updated = collection.find(Filters.eq("_id", new ObjectId(appointmentId))).first();
         return mapDocToAppointment(updated);

@@ -27,7 +27,9 @@ public class User {
 
     public enum Role {
         PATIENT,
-        DOCTOR
+        DOCTOR,
+        ADMIN,
+        MANAGER
     }
 
     @Data

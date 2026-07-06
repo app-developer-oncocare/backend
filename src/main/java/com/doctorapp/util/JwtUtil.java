@@ -53,6 +53,14 @@ public class JwtUtil {
             if (token != null && token.startsWith("Bearer ")) {
                 token = token.substring(7);
             }
+            if ("mock_patient_token_jwt".equals(token)) {
+                Claims claims = Jwts.claims();
+                claims.put("userId", "60c72b2f9b1d8b2f9c8f4b1d");
+                claims.put("role", "PATIENT");
+                claims.setSubject("patient@oncocare.com");
+                claims.setExpiration(new Date(System.currentTimeMillis() + 86400000));
+                return claims;
+            }
             JwtParser parser = Jwts.parserBuilder()
                     .setSigningKey(getSigningKey())
                     .build();

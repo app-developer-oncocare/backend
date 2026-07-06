@@ -46,13 +46,13 @@ public class SeedFunction {
             usersCollection.deleteMany(new Document());
             appointmentsCollection.deleteMany(new Document());
 
-            // 2. Create Dr. Layla User
+            // 2. Create Dr. Madhur Singh User
             ObjectId doctorId = new ObjectId();
             Document doctorDoc = new Document()
                     .append("_id", doctorId)
-                    .append("name", "Dr. Layla")
+                    .append("name", "Dr. Madhur Singh")
                     .append("mobileNo", "9999999999") // simple 10 digit number for dev testing
-                    .append("countryCode", "+971")
+                    .append("countryCode", "+91")
                     .append("role", "DOCTOR")
                     .append("createdAt", new Date());
 
@@ -67,6 +67,16 @@ public class SeedFunction {
             
             doctorDoc.append("profile", profileDoc);
             usersCollection.insertOne(doctorDoc);
+
+            // 2.5 Create System Admin User
+            Document adminDoc = new Document()
+                    .append("_id", new ObjectId())
+                    .append("name", "System Admin")
+                    .append("mobileNo", "8888888888")
+                    .append("countryCode", "+91")
+                    .append("role", "ADMIN")
+                    .append("createdAt", new Date());
+            usersCollection.insertOne(adminDoc);
 
             // 3. Create Sample Appointments linked to Dr. Layla
             Document app1 = new Document()
@@ -89,10 +99,40 @@ public class SeedFunction {
                     .append("status", "CONFIRMED")
                     .append("createdAt", new Date());
 
-            appointmentsCollection.insertMany(Arrays.asList(app1, app2));
+            Document app3 = new Document()
+                    .append("patientName", "Ahmed Ali")
+                    .append("patientInitials", "AA")
+                    .append("diagnosis", "Colon Cancer")
+                    .append("stage", "Stage IV")
+                    .append("doctorId", doctorId.toHexString())
+                    .append("timeSlot", "02:00 PM - 03:00 PM")
+                    .append("status", "CONFIRMED")
+                    .append("createdAt", new Date());
+
+            Document app4 = new Document()
+                    .append("patientName", "Sarah Smith")
+                    .append("patientInitials", "SS")
+                    .append("diagnosis", "Brain Tumor")
+                    .append("stage", "Stage I")
+                    .append("doctorId", doctorId.toHexString())
+                    .append("timeSlot", "03:00 PM - 04:00 PM")
+                    .append("status", "CONFIRMED")
+                    .append("createdAt", new Date());
+
+            Document app5 = new Document()
+                    .append("patientName", "Khalid Mansoor")
+                    .append("patientInitials", "KM")
+                    .append("diagnosis", "Prostate Cancer")
+                    .append("stage", "Stage III")
+                    .append("doctorId", doctorId.toHexString())
+                    .append("timeSlot", "04:00 PM - 05:00 PM")
+                    .append("status", "CONFIRMED")
+                    .append("createdAt", new Date());
+
+            appointmentsCollection.insertMany(Arrays.asList(app1, app2, app3, app4, app5));
 
             Map<String, String> responseMsg = new HashMap<>();
-            responseMsg.put("message", "Database seeded successfully. Dr. Layla (+9999999999) and 2 appointments created.");
+            responseMsg.put("message", "Database seeded successfully. Dr. Madhur Singh (+9999999999) and 5 appointments created.");
 
             return request.createResponseBuilder(HttpStatus.OK)
                     .body(MAPPER.writeValueAsString(responseMsg))
